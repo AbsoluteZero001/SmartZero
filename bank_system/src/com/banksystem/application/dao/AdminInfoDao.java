@@ -4,6 +4,8 @@ import com.banksystem.application.db.Database;
 import com.banksystem.application.entity.AdminInfo;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -129,5 +131,56 @@ public class AdminInfoDao {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * 更新管理员信息的方法
+     * @param adminInfo 包含管理员信息的AdminInfo对象
+     */
+    public static void updateAdmin(AdminInfo adminInfo) {
+        Connection conn = com.banksystem.application.db.Database.getConn();
+        String sql = "UPDATE admin_info SET password = ?, nickname = ?, name = ?, mobile = ? WHERE id = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, adminInfo.getPassword());
+            ps.setString(2, adminInfo.getNickname());
+            ps.setString(3, adminInfo.getName());
+            ps.setString(4, adminInfo.getMobile());
+            ps.setLong(5, adminInfo.getId());
+            int i = ps.executeUpdate();
+            if (i > 0) {
+                System.out.println("更新成功");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 获取所有管理员信息的方法
+     * @return 管理员信息列表
+     */
+    public static java.util.List<AdminInfo> getAllAdmins() {
+        java.util.List<AdminInfo> adminList = new java.util.ArrayList<>();
+        Connection conn = com.banksystem.application.db.Database.getConn();
+        String sql = "SELECT id, password, nickname, name, mobile FROM admin_info";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                AdminInfo admin = new AdminInfo();
+                admin.setId(rs.getLong("id"));
+                admin.setPassword(rs.getString("password"));
+                admin.setNickname(rs.getString("nickname"));
+                admin.setName(rs.getString("name"));
+                admin.setMobile(rs.getString("mobile"));
+                adminList.add(admin);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return adminList;
+    }
+}
+
 
 }
