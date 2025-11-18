@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" /> <!-- 设置文档字符编码为UTF-8 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- 适配移动端 -->
+  <title>银行管理系统</title>
+  <script src="../assets/js/axios.js"></script> <!-- 引入本地axios库 -->
+
+  <style>
+    /* ======== 页面整体样式 ======== */
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.5s ease;
+    }
+
+    /* 鼠标移动时动态背景 */
+    body:hover {
+      background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+    }
+
+    /* ======== 登录卡片容器 ======== */
+    .login-box {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      padding: 40px;
+      width: 340px;
+      text-align: center;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    /* 卡片出现动画 */
+    @keyframes fadeIn {
+      from {
+        transform: translateY(-30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    /* ======== 输入框样式 ======== */
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    /* 输入框聚焦高亮 */
+    input:focus,
+    select:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 8px rgba(37, 117, 252, 0.5);
+    }
+
+    /* ======== 提交按钮样式 ======== */
+    #submitBtn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #submitBtn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+      box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+    }
+
+    /* 加载状态动画 */
+    .loading {
+      background: #aaa !important;
+      cursor: not-allowed;
+      transform: scale(0.98);
+    }
+
+    /* ======== 提示文本 ======== */
+    .msg {
+      color: #e74c3c;
+      font-size: 13px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      height: 16px;
+      text-align: left;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+
+<body>
+<div class="login-box">
+  <h2>欢迎登录银行管理系统</h2>
+
+  <form id="loginForm">
+    <!-- 手机号输入框 -->
+    <label for="mobile">手机号：</label>
+    <input type="text" name="mobile" id="mobile" placeholder="请输入手机号" />
+    <div class="msg" id="mobileMsg"></div>
+
+    <!-- 密码输入框 -->
+    <label for="pwd">密码：</label>
+    <input type="password" name="pwd" id="pwd" placeholder="请输入密码" />
+    <div class="msg" id="pwdMsg"></div>
+
+    <!-- 登录类型选择框 -->
+    <label for="loginType">登录身份：</label>
+    <select name="loginType" id="loginType">
+      <option value="admin">管理员</option>
+      <option value="user">普通用户</option>
+    </select>
+
+    <!-- 提交按钮 -->
+    <input type="submit" value="登录" id="submitBtn" />
+  </form>
+</div>
+
+<script>
+  // ======== 元素获取 ========
+  const form = document.querySelector("#loginForm");
+  const btn = document.querySelector("#submitBtn");
+  const mobileInput = document.querySelector("#mobile");
+  const pwdInput = document.querySelector("#pwd");
+  const mobileMsg = document.querySelector("#mobileMsg");
+  const pwdMsg = document.querySelector("#pwdMsg");
+
+  // ======== 实时验证输入 ========
+  mobileInput.addEventListener("input", () => {
+    mobileMsg.textContent = mobileInput.value.trim() ? "" : "手机号不能为空！";
+  });
+
+  pwdInput.addEventListener("input", () => {
+    pwdMsg.textContent = pwdInput.value.trim() ? "" : "密码不能为空！";
+  });
+
+  // ======== 表单提交 ========
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const mobile = mobileInput.value.trim();
+    const pwd = pwdInput.value.trim();
+    const loginType = document.querySelector("#loginType").value;
+
+    // 简单前端验证
+    if (!mobile || !pwd) {
+      mobileMsg.textContent = !mobile ? "手机号不能为空！" : "";
+      pwdMsg.textContent = !pwd ? "密码不能为空！" : "";
+      return;
+    }
+
+    const data = { mobile, pwd, loginType };
+    const url = "http://localhost:8080";
+
+    console.log("发送登录数据：", data);
+
+    // 设置按钮加载状态
+    btn.disabled = true;
+    btn.classList.add("loading");
+    btn.value = "登录中...";
+
+    try {
+      const res = await axios({
+        method: "post",
+        url: `${url}/login`,
+        data,
+      });
+
+      console.log("服务器响应：", res.data);
+
+      // 错误提示：不同的错误类型
+      if (res.data) {
+        if (res.data.code === 404) {
+          // 管理员或用户不存在
+          if (loginType === "admin") {
+            alert("管理员不存在！");
+          } else {
+            alert("用户不存在！");
+          }
+        } else if (res.data.code === 401) {
+          // 密码错误
+          alert("密码错误！");
+        } else if (res.data.code === 400) {
+          // 登录失败
+          alert("登录失败，请检查账号或密码！");
+        } else if (res.data.data && res.data.data.token) {
+          localStorage.setItem("token", res.data.data.token);
+
+          if (loginType === "admin") {
+            alert("管理员登录成功！正在跳转...");
+            window.location = "./OpenAdmin.html";
+          } else {
+            alert("用户登录成功！正在跳转...");
+            window.location = "./OpenUser.html";
+          }
+        } else {
+          alert("登录失败，请检查账号或密码！");
+        }
+      } else {
+        alert("服务器响应异常，请稍后重试！");
+      }
+    } catch (err) {
+      console.error("登录错误：", err);
+      alert("请求失败，请检查服务器是否启动！");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("loading");
+      btn.value = "登录";
+    }
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" /> <!-- 设置文档字符编码为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- 设置视口，使页面在移动设备上正确显示 -->
+    <title>Document</title> <!-- 设置页面标题 -->
+    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> --> <!-- 注释掉的axios CDN链接 -->
+    <script src="../assets/js/axios.js"></script> <!-- 引入本地axios库 -->
+  </head>
+  <body>
+    <!-- 表单部分，包含手机号、密码和登录类型输入 -->
+    <form>
+      <!-- 手机号输入框 -->
+      <label for="mobile">
+        手机号：
+        <input type="text" name="mobile" id="mobile" />
+      </label>
+      <br />
+      <!-- 密码输入框 -->
+      <label for="pwd">
+        密码：
+        <input type="text" name="pwd" id="pwd" />
+      </label>
+      <!-- 登录类型选择框 -->
+      <label for="loginType">
+        登录状态：
+        <!-- <input type="text" name="pwd" id="pwd" /> --> <!-- 注释掉的密码输入框 -->
+        <select name="loginType" id="loginType">
+          <option value="admin">admin</option> <!-- 管理员选项 -->
+          <option value="user">user</option> <!-- 普通用户选项 -->
+        </select>
+      </label>
+      <br />
+      <!-- 提交按钮 -->
+      <input type="submit" value="提交" />
+    </form>
+    <script>
+      // 获取提交按钮元素
+      const btn = document.querySelector("input[type=submit]");
+      console.log(btn); // 在控制台输出按钮元素
+      // 为提交按钮添加点击事件处理函数
+      btn.onclick = async (e) => {
+        // 获取表单输入值
+        const mobile = document.querySelector("#mobile").value;
+        const pwd = document.querySelector("#pwd").value;
+        const loginType = document.querySelector("#loginType").value;
+
+        // 输入验证
+        if (!mobile || !pwd) {
+          alert("手机号和密码不能为空！");
+          return;
+        }
+
+        // 构建请求数据对象
+        const data = {
+          mobile,
+          pwd,
+          loginType,
+        };
+        e.preventDefault(); // 阻止表单默认提交行为
+        const url = "http://localhost:8080"; // 设置API基础URL
+        console.log(data); // 在控制台输出请求数据
+        // 发送POST请求到登录接口
+          const res = await axios({
+            method: "post",
+            url: `${url}/login`,
+            data,
+          });
+          console.log(res.data); // 在控制台输出响应数据
+
+          // // 检查响应中是否包含token
+          // if (res.data.data.token) {
+          //   // 如果有token，跳转到首页并保存token到localStorage
+          //   window.location = "./index.html";
+          //   localStorage.setItem("token", res.data.data.token);
+          // } else {
+          //   // 如果没有token，提示错误
+          //   alert("你出错了");
+          // }
+        if (res.data && res.data.data && res.data.data.token) {
+          localStorage.setItem("token", res.data.data.token);
+          if (loginType === "admin") {
+            alert("管理员登录成功，正在跳转...");
+            window.location = "./index.html";
+          } else if (loginType === "user") {
+            alert("用户登录成功，正在跳转...");
+            window.location = "./user.html";
+          }
+        } else {
+          alert(res.data.message || "登录失败，请检查账号或密码！");
+        }
+
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenUser 用户管理页面</title>
+    <script src="../assets/js/axios.js"></script>
+
+    <style>
+        /* ======= 全局样式 ======= */
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+            color: #333;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            padding: 30px 40px;
+            width: 90%;
+            max-width: 1000px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        /* ======= 按钮样式 ======= */
+        button,
+        input[type="submit"] {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover,
+        input[type="submit"]:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+        }
+
+        /* ======= 表格样式 ======= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f0f8ff;
+            transition: background 0.2s;
+        }
+
+        /* ======= 表单样式 ======= */
+        form {
+            margin-top: 30px;
+            background-color: #f9f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 5px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 8px rgba(37, 117, 252, 0.4);
+        }
+
+        .form-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* ======= 加载提示 ======= */
+        #loading {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h2>用户管理系统（OpenUser）</h2>
+
+    <!-- 新增用户按钮 -->
+    <button id="addUser">＋ 新增用户</button>
+
+    <!-- 用户表格 -->
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>昵称</th>
+            <th>用户名</th>
+            <th>电话</th>
+            <th>创建时间</th>
+            <th>修改时间</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="userTable">
+        <tr><td colspan="7" id="loading">正在加载中...</td></tr>
+        </tbody>
+    </table>
+
+    <!-- 修改用户 -->
+    <h3 style="margin-top:30px;color:#444;">修改 / 新增 用户信息</h3>
+    <form id="userForm">
+        <label for="mobile">手机号：</label>
+        <input type="text" id="mobile" name="mobile" placeholder="请输入手机号" />
+
+        <label for="name">用户名：</label>
+        <input type="text" id="name" name="name" placeholder="请输入用户名" />
+
+        <label for="nickName">昵称：</label>
+        <input type="text" id="nickName" name="nickName" placeholder="请输入昵称" />
+
+        <label for="pwd">密码：</label>
+        <input type="password" id="pwd" name="pwd" placeholder="请输入密码" />
+
+        <div class="form-buttons">
+            <input type="submit" value="提交" id="submitBtn" />
+            <input type="submit" value="修改" id="setBtn" />
+        </div>
+    </form>
+</div>
+
+<script>
+    const url = "http://localhost:8080";
+    const tbody = document.querySelector("#userTable");
+    const form = document.querySelector("#userForm");
+    const btn = document.querySelector("#submitBtn");
+    const btnSet = document.querySelector("#setBtn");
+
+    let data = { mobile: "", name: "", nickname: "", pwd: "", id: "" };
+
+    // ========== 提交按钮 ==========
+    btn.onclick = async (e) => {
+        e.preventDefault();
+        const mobile = document.querySelector("#mobile").value.trim();
+        const name = document.querySelector("#name").value.trim();
+        const nickname = document.querySelector("#nickName").value.trim();
+        const pwd = document.querySelector("#pwd").value.trim();
+
+        const pm = { id: data.id, mobile, n: name, nn: nickname, pwd };
+        const res = await axios({
+            method: "post",
+            url: `${url}/updateUser`,
+            data: pm,
+            headers: { token: localStorage.getItem("token") },
+        });
+        console.log(res);
+        alert("用户信息已提交！");
+        loadUserList();
+    };
+
+    // ========== 修改按钮 ==========
+    btnSet.onclick = async (e) => {
+        e.preventDefault();
+        const mobile = document.querySelector("#mobile").value.trim();
+        const name = document.querySelector("#name").value.trim();
+        const nickname = document.querySelector("#nickName").value.trim();
+        const pwd = document.querySelector("#pwd").value.trim();
+
+        const data = { mobile, name, nickname, pwd, id: 8 };
+        const res = await axios({
+            method: "PUT",
+            url: `${url}/set/user`,
+            data,
+        });
+        console.log(res);
+        alert("修改成功！");
+        loadUserList();
+    };
+
+    // ========== 获取用户列表 ==========
+    async function loadUserList() {
+        tbody.innerHTML = `<tr><td colspan="7" id="loading">正在加载中...</td></tr>`;
+        try {
+            const res = await axios({
+                method: "get",
+                url: `${url}/user/list`,
+                headers: { token: localStorage.getItem("token") },
+            });
+
+            console.log(res);
+            const list = res.data.data;
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7">暂无用户数据</td></tr>`;
+                return;
+            }
+
+            const strList = list.map((item) => `
+          <tr>
+            <td>${item.id}</td>
+            <td>${item.nickname}</td>
+            <td>${item.name}</td>
+            <td>${item.mobile}</td>
+            <td>${new Date(item.createTime).toLocaleDateString()}</td>
+            <td>${new Date(item.updateTime).toLocaleDateString()}</td>
+            <td>
+              <button class="updateBtn" data-user="${item.id}">修改</button>
+              <button class="deleteBtn" data-id="${item.id}">删除</button>
+            </td>
+          </tr>
+        `).join("");
+
+            tbody.innerHTML = strList;
+
+            // 修改按钮事件
+            document.querySelectorAll(".updateBtn").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    const id = e.target.dataset.user;
+                    const item = list.find((it) => it.id == id);
+                    document.querySelector("#mobile").value = item.mobile;
+                    document.querySelector("#name").value = item.name;
+                    document.querySelector("#nickName").value = item.nickname;
+                    document.querySelector("#pwd").value = item.password;
+                    data = { ...item };
+                    alert("已加载用户信息，可修改！");
+                });
+            });
+
+            // 删除按钮事件
+            document.querySelectorAll(".deleteBtn").forEach((btn) => {
+                btn.addEventListener("click", async (e) => {
+                    const id = e.target.dataset.id;
+                    if (confirm("确定删除该用户？")) {
+                        await axios.delete(`${url}/user/${id}`, {
+                            headers: { token: localStorage.getItem("token") },
+                        });
+                        alert("删除成功！");
+                        loadUserList();
+                    }
+                });
+            });
+        } catch (err) {
+            console.error("加载错误：", err);
+            tbody.innerHTML = `<tr><td colspan="7">加载失败，请检查服务器！</td></tr>`;
+        }
+    }
+
+    // 页面加载时执行
+    loadUserList();
+</script>
+</body>
+</html>

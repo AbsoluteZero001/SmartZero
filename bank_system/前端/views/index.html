@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+    <script src="../assets/js/axios.js"></script>
+  </head>
+  <body>
+    <button>新增管理员</button><br />
+    <table>
+      <thead>
+        <tr>
+          <th>用户id</th>
+          <th>昵称</th>
+          <th>姓名</th>
+          <th>电话号码</th>
+          <th>创建时间</th>
+          <th>修改时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <button id="update">修改</button>
+            <button id="delete">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    修改管理员
+    <form>
+      <label for="mobile">
+        手机号：
+        <input type="text" name="mobile" id="mobile" />
+      </label>
+      <br />
+      <label for="name">
+        用户名：
+        <input type="text" name="name" id="name" />
+      </label>
+      <br />
+      <label for="nickName">
+        昵称：
+        <input type="text" name="nickName" id="nickName" />
+      </label>
+      <br />
+      <label for="pwd">
+        密码：
+        <input type="text" name="pwd" id="pwd" />
+      </label>
+      <br />
+      <input type="submit" value="提交" />
+      <input type="submit" id="set" value="修改" />
+    </form>
+    <script>
+      const btn = document.querySelector("input[type=submit]");
+      const btn1 = document.querySelector("#set");
+      let data = {
+        mobile: "",
+        name: "",
+        nickname: "",
+        pwd: "",
+        id: "",
+      };
+
+      btn.onclick = async (e) => {
+        const mobile = document.querySelector("#mobile").value;
+        const name = document.querySelector("#name").value;
+        const nickname = document.querySelector("#nickName").value;
+        const pwd = document.querySelector("#pwd").value;
+        let pm = {
+          id: data.id,
+          mobile: mobile,
+          n: name,
+          nn: nickname,
+          pwd: pwd,
+        };
+        e.preventDefault();
+        let url = "http://localhost:8080";
+        const form = document.querySelector("form");
+        // console.log([form]);
+        const res = await axios({
+          method: "post",
+          url: `${url}/updateAdmin`,
+          data: pm,
+          headers: {
+            token: localStorage.getItem("token"),
+          },
+        });
+        console.log(res);
+      };
+      btn1.onclick = async (e) => {
+        const mobile = document.querySelector("#mobile").value;
+        const name = document.querySelector("#name").value;
+        const nickname = document.querySelector("#nickName").value;
+        const pwd = document.querySelector("#pwd").value;
+        let data = {
+          mobile,
+          name,
+          nickname,
+          pwd,
+          id: 8,
+        };
+        e.preventDefault();
+        let url = "http://localhost:8080";
+        const res = await axios({
+          method: "PUT",
+          url: `${url}/set/admin`,
+          data,
+        });
+        console.log(res);
+      };
+      (async function () {
+        let url = "http://localhost:8080";
+        const res = await axios({
+          methods: "get",
+          url: `${url}/admin/list`,
+          headers: {
+            token: localStorage.getItem("token"),
+          },
+        });
+        console.log(res);
+        const tbody = document.querySelector("tbody");
+
+        const strList = res.data.data.map((item) => {
+          return `<tr>
+          <td>${item.id}</td>
+          <td>${item.nickname}</td>
+          <td>${item.name}</td>
+          <td>${item.password}</td>
+          <td>${new Date(item.createTime).toLocaleDateString()}</td>
+          <td>${new Date(item.updateTime).toLocaleDateString()}</td>
+          <td>
+            <button id="update" >修改</button>
+            <button id="delete" data-id="${item.id}">删除</button>
+          </td>
+        </tr>`;
+        });
+        tbody.innerHTML = strList.join("");
+        const list = document.querySelectorAll("#update");
+        list.forEach((item, index) => {
+          item.addEventListener("click", function () {
+            const item = res.data.data[index];
+            // alert("修改");
+            console.log(item);
+
+            const mobile = document.querySelector("#mobile");
+            const name = document.querySelector("#name");
+            const nickname = document.querySelector("#nickName");
+            const pwd = document.querySelector("#pwd");
+            data = {
+              mobile: item.mobile,
+              name: item.name,
+              nickname: item.nickname,
+              pwd: item.password,
+              id: item.id,
+            };
+            mobile.value = item.mobile;
+            name.value = item.name;
+            nickName.value = item.nickname;
+            pwd.value = item.password;
+          });
+        });
+        const deleteList = document.querySelectorAll("#delete");
+        deleteList.forEach((item, index) => {
+          item.addEventListener("click", function (e) {
+            console.log(e.target.dataset.id);
+            alert("修改");
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
