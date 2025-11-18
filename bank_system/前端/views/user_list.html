@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>用户列表</title>
+    <script src="../assets/js/axios.js"></script>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>用户管理</h1>
+
+    <!-- 添加/修改用户表单 -->
+    <div class="form-container">
+        <h2>添加/修改用户</h2>
+        <form id="userForm">
+            <input type="hidden" id="userId" name="id" value="">
+            <label for="mobile">手机号：<input type="text" name="mobile" id="mobile" required /></label><br />
+            <label for="name">用户名：<input type="text" name="name" id="name" required /></label><br />
+            <label for="nickname">昵称：<input type="text" name="nickname" id="nickname" required /></label><br />
+            <label for="pwd">密码：<input type="password" name="pwd" id="pwd" required /></label><br />
+            <button type="submit" id="submitBtn">添加用户</button>
+            <button type="button" id="resetBtn">重置</button>
+        </form>
+    </div>
+
+    <!-- 用户列表 -->
+    <h2>用户列表</h2>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>手机号</th>
+                <th>用户名</th>
+                <th>昵称</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 数据将通过 JavaScript 填充 -->
+        </tbody>
+    </table>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8080"; // 假设后端运行在8080端口
+        const userForm = document.getElementById('userForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const userTableBody = document.querySelector('#userTable tbody');
+
+        // 辅助函数：获取表单数据
+        function getFormData() {
+            return {
+                id: document.getElementById('userId').value || null,
+                mobile: document.getElementById('mobile').value,
+                name: document.getElementById('name').value,
+                nickname: document.getElementById('nickname').value,
+                pwd: document.getElementById('pwd').value,
+            };
+        }
+
+        // 辅助函数：清空表单
+        function resetForm() {
+            userForm.reset();
+            document.getElementById('userId').value = '';
+            submitBtn.textContent = '添加用户';
+            document.getElementById('pwd').required = true;
+        }
+
+        // 辅助函数：填充表单
+        function fillForm(user) {
+            document.getElementById('userId').value = user.id;
+            document.getElementById('mobile').value = user.mobile;
+            document.getElementById('name').value = user.name;
+            document.getElementById('nickname').value = user.nickname;
+            document.getElementById('pwd').value = ''; // 密码不回显
+            document.getElementById('pwd').required = false; // 修改时密码可以为空
+            submitBtn.textContent = '修改用户';
+        }
+
+        // 1. 获取用户列表
+        async function fetchUsers() {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/user/list`);
+                if (res.data.success) {
+                    renderUserTable(res.data.data);
+                } else {
+                    alert('获取用户列表失败: ' + res.data.message);
+                }
+            } catch (error) {
+                console.error('获取用户列表出错:', error);
+                alert('获取用户列表出错，请检查后端服务是否运行。');
+            }
+        }
+
+        // 2. 渲染表格
+        function renderUserTable(users) {
+            userTableBody.innerHTML = '';
+            users.forEach(user => {
+                const row = userTableBody.insertRow();
+                row.insertCell().textContent = user.id;
+                row.insertCell().textContent = user.mobile;
+                row.insertCell().textContent = user.name;
+                row.insertCell().textContent = user.nickname;
+
+                const actionCell = row.insertCell();
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '修改';
+                editBtn.onclick = () => fillForm(user);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '删除';
+                deleteBtn.onclick = () => deleteUser(user.id);
+
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+            });
+        }
+
+        // 3. 添加/修改用户
+        userForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = getFormData();
+            const isUpdate = !!data.id;
+            const url = isUpdate ? `${API_BASE_URL}/user/update` : `${API_BASE_URL}/user/add`;
+            const method = 'POST'; // 统一使用POST
+
+            // 过滤掉空密码（修改操作时）
+            if (isUpdate && !data.pwd) {
+                delete data.pwd;
+            }
+
+            try {
+                const res = await axios({
+                    method: method,
+                    url: url,
+                    data: data,
+                });
+
+                if (res.data.success) {
+                    alert(res.data.message);
+                    resetForm();
+                    fetchUsers(); // 刷新列表
+                } else {
+                    alert('操作失败: ' + res.data.message);
+                }
+            } catch (error) {
+                console.error('操作出错:', error);
+                alert('操作出错，请检查后端服务是否运行。');
+            }
+        };
+
+        // 4. 删除用户
+        async function deleteUser(id) {
+            if (!confirm(`确定要删除ID为 ${id} 的用户吗？`)) {
+                return;
+            }
+
+            try {
+                const res = await axios.post(`${API_BASE_URL}/user/delete`, { id: id });
+                if (res.data.success) {
+                    alert(res.data.message);
+                    fetchUsers(); // 刷新列表
+                } else {
+                    alert('删除失败: ' + res.data.message);
+                }
+            } catch (error) {
+                console.error('删除出错:', error);
+                alert('删除出错，请检查后端服务是否运行。');
+            }
+        }
+
+        // 5. 重置按钮事件
+        resetBtn.onclick = resetForm;
+
+        // 页面加载时获取列表
+        fetchUsers();
+    </script>
+</body>
+</html>

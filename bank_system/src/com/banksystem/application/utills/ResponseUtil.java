@@ -7,6 +7,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ResponseUtil {
+
+    public static void writeJson(HttpServletResponse response, int code, String message, Object data) {
+        PrintWriter out = null;
+        try {
+            response.setContentType("application/json;charset=utf-8");
+            ResultVO<Object> resp = new ResultVO<>();
+            resp.setCode(code);
+            resp.setMessage(message);
+            resp.setData(data);
+            resp.setSuccess(code == 200);
+
+            out = response.getWriter();
+            out.write(JSONObject.toJSONString(resp, SerializerFeature.WriteMapNullValue));
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // 请求成功的响应体
     public static <T> void success(HttpServletResponse response, JSON jsonObject){
         PrintWriter out = null;

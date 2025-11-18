@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>管理员列表</title>
+    <script src="../assets/js/axios.js"></script>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>管理员管理</h1>
+
+    <!-- 添加/修改管理员表单 -->
+    <div class="form-container">
+        <h2>添加/修改管理员</h2>
+        <form id="adminForm">
+            <input type="hidden" id="adminId" name="id" value="">
+            <label for="mobile">手机号：<input type="text" name="mobile" id="mobile" required /></label><br />
+            <label for="name">用户名：<input type="text" name="name" id="name" required /></label><br />
+            <label for="nickname">昵称：<input type="text" name="nickname" id="nickname" required /></label><br />
+            <label for="pwd">密码：<input type="password" name="pwd" id="pwd" required /></label><br />
+            <button type="submit" id="submitBtn">添加管理员</button>
+            <button type="button" id="resetBtn">重置</button>
+        </form>
+    </div>
+
+    <!-- 管理员列表 -->
+    <h2>管理员列表</h2>
+    <table id="adminTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>手机号</th>
+                <th>用户名</th>
+                <th>昵称</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 数据将通过 JavaScript 填充 -->
+        </tbody>
+    </table>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8080"; // 假设后端运行在8080端口
+        const adminForm = document.getElementById('adminForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const adminTableBody = document.querySelector('#adminTable tbody');
+
+        // 辅助函数：获取表单数据
+        function getFormData() {
+            return {
+                id: document.getElementById('adminId').value || null,
+                mobile: document.getElementById('mobile').value,
+                name: document.getElementById('name').value,
+                nickname: document.getElementById('nickname').value,
+                pwd: document.getElementById('pwd').value,
+            };
+        }
+
+        // 辅助函数：清空表单
+        function resetForm() {
+            adminForm.reset();
+            document.getElementById('adminId').value = '';
+            submitBtn.textContent = '添加管理员';
+            document.getElementById('pwd').required = true;
+        }
+
+        // 辅助函数：填充表单
+        function fillForm(admin) {
+            document.getElementById('adminId').value = admin.id;
+            document.getElementById('mobile').value = admin.mobile;
+            document.getElementById('name').value = admin.name;
+            document.getElementById('nickname').value = admin.nickname;
+            document.getElementById('pwd').value = ''; // 密码不回显
+            document.getElementById('pwd').required = false; // 修改时密码可以为空
+            submitBtn.textContent = '修改管理员';
+        }
+
+        // 1. 获取管理员列表
+        async function fetchAdmins() {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/admin/list`);
+                if (res.data.success) {
+                    renderAdminTable(res.data.data);
+                } else {
+                    alert('获取管理员列表失败: ' + res.data.message);
+                }
+            } catch (error) {
+                console.error('获取管理员列表出错:', error);
+                alert('获取管理员列表出错，请检查后端服务是否运行。');
+            }
+        }
+
+        // 2. 渲染表格
+        function renderAdminTable(admins) {
+            adminTableBody.innerHTML = '';
+            admins.forEach(admin => {
+                const row = adminTableBody.insertRow();
+                row.insertCell().textContent = admin.id;
+                row.insertCell().textContent = admin.mobile;
+                row.insertCell().textContent = admin.name;
+                row.insertCell().textContent = admin.nickname;
+
+                const actionCell = row.insertCell();
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '修改';
+                editBtn.onclick = () => fillForm(admin);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '删除';
+                deleteBtn.onclick = () => deleteAdmin(admin.id);
+
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+            });
+        }
+
+        // 3. 添加/修改管理员
+        adminForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = getFormData();
+            const isUpdate = !!data.id;
+            const url = isUpdate ? `${API_BASE_URL}/admin/update` : `${API_BASE_URL}/admin/add`;
+            const method = 'POST'; // 统一使用POST
+
+            // 过滤掉空密码（修改操作时）
+            if (isUpdate && !data.pwd) {
+                delete data.pwd;
+            }
+
+            try {
+                const res = await axios({
+                    method: method,
+                    url: url,
+                    data: data,
+                });
+
+                if (res.data.success) {
+                    alert(res.data.message);
+                    resetForm();
+                    fetchAdmins(); // 刷新列表
+                } else {
+                    alert('操作失败: ' + res.data.message);
+                }
+            } catch (error) {
+                console.error('操作出错:', error);
+                alert('操作出错，请检查后端服务是否运行。');
+            }
+        };
+
+        // 4. 删除管理员
+        async function deleteAdmin(id) {
+            if (!confirm(`确定要删除ID为 ${id} 的管理员吗？`)) {
+                return;
+            }
+
+            try {
+                const res = await axios.post(`${API_BASE_URL}/admin/delete`, { id: id });
+                if (res.data.success) {
+                    alert(res.data.message);
+                    fetchAdmins(); // 刷新列表
+                } else {
+                    alert('删除失败: ' + res.data.message);
+                }
+            } catch (error) {
+                console.error('删除出错:', error);
+                alert('删除出错，请检查后端服务是否运行。');
+            }
+        }
+
+        // 5. 重置按钮事件
+        resetBtn.onclick = resetForm;
+
+        // 页面加载时获取列表
+        fetchAdmins();
+    </script>
+</body>
+</html>

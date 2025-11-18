@@ -6,6 +6,8 @@ import com.banksystem.application.entity.AdminInfo;
 import com.banksystem.application.utills.ConvertUtils;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -134,6 +136,7 @@ public class AdminInfoDao {
         }
     }
 
+<<<<<<< HEAD
     //2.查询全部
     public JSONArray queryAll() {
         JSONArray list = new JSONArray();
@@ -170,6 +173,15 @@ public class AdminInfoDao {
         //获取连接池
         Connection conn = Database.getConn();
         String sql = "update admin_info set password = ?, nickname = ?, name = ?, mobile = ? where id = ?";
+=======
+    /**
+     * 更新管理员信息的方法
+     * @param adminInfo 包含管理员信息的AdminInfo对象
+     */
+    public static void updateAdmin(AdminInfo adminInfo) {
+        Connection conn = com.banksystem.application.db.Database.getConn();
+        String sql = "UPDATE admin_info SET password = ?, nickname = ?, name = ?, mobile = ? WHERE id = ?";
+>>>>>>> 46787e0ed5bff06577ca8d7bbf1e24d5bac42dbd
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, adminInfo.getPassword());
@@ -179,11 +191,47 @@ public class AdminInfoDao {
             ps.setLong(5, adminInfo.getId());
             int i = ps.executeUpdate();
             if (i > 0) {
+<<<<<<< HEAD
                 System.out.println("修改成功");
+=======
+                System.out.println("更新成功");
+>>>>>>> 46787e0ed5bff06577ca8d7bbf1e24d5bac42dbd
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * 获取所有管理员信息的方法
+     * @return 管理员信息列表
+     */
+    public static java.util.List<AdminInfo> getAllAdmins() {
+        java.util.List<AdminInfo> adminList = new java.util.ArrayList<>();
+        Connection conn = com.banksystem.application.db.Database.getConn();
+        String sql = "SELECT id, password, nickname, name, mobile FROM admin_info";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                AdminInfo admin = new AdminInfo();
+                admin.setId(rs.getLong("id"));
+                admin.setPassword(rs.getString("password"));
+                admin.setNickname(rs.getString("nickname"));
+                admin.setName(rs.getString("name"));
+                admin.setMobile(rs.getString("mobile"));
+                adminList.add(admin);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return adminList;
+    }
+}
+
+
+>>>>>>> 46787e0ed5bff06577ca8d7bbf1e24d5bac42dbd
 }
 
