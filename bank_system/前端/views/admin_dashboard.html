@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Dashboard</title>
+    <script src="../assets/js/axios.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            position: relative;
+            z-index: 1;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #bd2130;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-full {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Admin Dashboard</h1>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('users')">Users Management</div>
+        <div class="tab" onclick="showTab('transactions')">All Transactions</div>
+        <div class="tab" onclick="showTab('add-user')">Add User</div>
+    </div>
+
+    <!-- Users Management Section -->
+    <div id="users" class="tab-content active">
+        <div class="section">
+            <h2>Users List</h2>
+            <table id="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Card Number</th>
+                    <th>Card Type</th>
+                    <th>Nickname</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="8">Loading users...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- All Transactions Section -->
+    <div id="transactions" class="tab-content">
+        <div class="section">
+            <h2>All Transactions</h2>
+            <table id="all-transactions-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="7">Loading transactions...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add User Section -->
+    <div id="add-user" class="tab-content">
+        <div class="section">
+            <h2>Add New User</h2>
+            <form id="add-user-form">
+                <div>
+                    <label for="card-type">Card Type:</label>
+                    <select id="card-type" name="cardType" required>
+                        <option value="1">Savings Card</option>
+                        <option value="2">Credit Card</option>
+                        <option value="3">Social Security Card</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="card-no">Card Number:</label>
+                    <input type="text" id="card-no" name="cardNo" required/>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required/>
+                </div>
+                <div>
+                    <label for="nickname">Nickname:</label>
+                    <input type="text" id="nickname" name="nickname" required/>
+                </div>
+                <div>
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" name="name" required/>
+                </div>
+                <div>
+                    <label for="address">Address:</label>
+                    <input type="text" id="address" name="address"/>
+                </div>
+                <div>
+                    <label for="id-num">ID Number:</label>
+                    <input type="text" id="id-num" name="idNum" required/>
+                </div>
+                <div>
+                    <label for="mobile">Mobile:</label>
+                    <input type="text" id="mobile" name="mobile" required/>
+                </div>
+                <div class="form-full">
+                    <button type="submit">Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const baseUrl = "http://localhost:8080";
+    let token = localStorage.getItem("token");
+
+    // Check if admin is logged in
+    if (!token) {
+        alert("You are not logged in as admin. Redirecting to login page...");
+        window.location.href = "./login.html";
+    }
+
+    // Load data when page loads
+    window.onload = function() {
+        loadUsers();
+        loadAllTransactions();
+    };
+
+    // Tab switching functionality
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName).classList.add('active');
+        
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+    }
+
+    // Load users
+    async function loadUsers() {
+        try {
+            const response = await axios({
+                method: "get",
+                url: `${baseUrl}/admin?action=users`,
+                headers: {
+                    "token": token
+                }
+            });
+
+            if (response.data.code === 200) {
+                const users = response.data.data.users;
+                const tbody = document.querySelector('#users-table tbody');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8">No users found.</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.cardNo}</td>
+                        <td>${getCardTypeName(user.cardType)}</td>
+                        <td>${user.nickname}</td>
+                        <td>${user.name}</td>
+                        <td>${user.mobile}</td>
+                        <td>${user.state === 1 ? 'Active' : 'Inactive'}</td>
+                        <td>
+                            <button onclick="editUser(${user.id})">Edit</button>
+                            <button class="${user.state === 1 ? 'btn-danger' : 'btn-success'}" 
+                                    onclick="toggleUserStatus(${user.id}, ${user.state})">
+                                ${user.state === 1 ? 'Disable' : 'Enable'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                document.querySelector('#users-table tbody').innerHTML = 
+                    '<tr><td colspan="8">Error loading users.</td></tr>';
+            }
+        } catch (error) {
+            console.error("Error loading users:", error);
+            document.querySelector('#users-table tbody').innerHTML = 
+                '<tr><td colspan="8">Error loading users.</td></tr>';
+        }
+    }
+
+    // Load all transactions
+    async function loadAllTransactions() {
+        try {
+            const response = await axios({
+                method: "get",
+                url: `${baseUrl}/admin?action=transactions`,
+                headers: {
+                    "token": token
+                }
+            });
+
+            if (response.data.code === 200) {
+                const transactions = response.data.data.transactions;
+                const tbody = document.querySelector('#all-transactions-table tbody');
+                
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7">No transactions found.</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = transactions.map(transaction => `
+                    <tr>
+                        <td>${transaction.id}</td>
+                        <td>${transaction.userId}</td>
+                        <td>${getTransactionTypeName(transaction.transactionType)}</td>
+                        <td>$${(transaction.amount / 100).toFixed(2)}</td>
+                        <td>$${(transaction.balanceAfter / 100).toFixed(2)}</td>
+                        <td>${transaction.description}</td>
+                        <td>${new Date(transaction.createTime).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                document.querySelector('#all-transactions-table tbody').innerHTML = 
+                    '<tr><td colspan="7">Error loading transactions.</td></tr>';
+            }
+        } catch (error) {
+            console.error("Error loading transactions:", error);
+            document.querySelector('#all-transactions-table tbody').innerHTML = 
+                '<tr><td colspan="7">Error loading transactions.</td></tr>';
+        }
+    }
+
+    // Add user
+    document.getElementById('add-user-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            action: "addUser",
+            cardType: document.getElementById('card-type').value,
+            cardNo: document.getElementById('card-no').value,
+            password: document.getElementById('password').value,
+            nickname: document.getElementById('nickname').value,
+            name: document.getElementById('name').value,
+            address: document.getElementById('address').value,
+            idNum: document.getElementById('id-num').value,
+            mobile: document.getElementById('mobile').value
+        };
+        
+        try {
+            const response = await axios({
+                method: "post",
+                url: `${baseUrl}/admin`,
+                data: formData,
+                headers: {
+                    "token": token
+                }
+            });
+            
+            if (response.data.code === 200) {
+                alert("User added successfully!");
+                document.getElementById('add-user-form').reset();
+                loadUsers(); // Reload users list
+            } else {
+                alert("Error adding user: " + response.data.message);
+            }
+        } catch (error) {
+            console.error("Error adding user:", error);
+            alert("Error adding user.");
+        }
+    });
+
+    // Edit user (placeholder function)
+    function editUser(userId) {
+        alert(`Edit user with ID: ${userId} - Feature to be implemented`);
+    }
+
+    // Toggle user status (placeholder function)
+    function toggleUserStatus(userId, currentState) {
+        const action = currentState === 1 ? "disable" : "enable";
+        alert(`Would ${action} user with ID: ${userId} - Feature to be implemented`);
+    }
+
+    // Helper functions
+    function getCardTypeName(cardType) {
+        switch(cardType) {
+            case "1": return "Savings";
+            case "2": return "Credit";
+            case "3": return "Social Security";
+            default: return "Unknown";
+        }
+    }
+
+    function getTransactionTypeName(type) {
+        switch(type) {
+            case "deposit": return "Deposit";
+            case "withdrawal": return "Withdrawal";
+            case "transfer_out": return "Transfer Out";
+            case "transfer_in": return "Transfer In";
+            default: return type;
+        }
+    }
+</script>
+</body>
+</html>

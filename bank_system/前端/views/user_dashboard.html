@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>User Dashboard</title>
+    <script src="../assets/js/axios.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            position: relative;
+            z-index: 1;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>User Dashboard</h1>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('account')">Account Info</div>
+        <div class="tab" onclick="showTab('transactions')">Transactions</div>
+        <div class="tab" onclick="showTab('transfer')">Transfer</div>
+    </div>
+
+    <!-- Account Information Section -->
+    <div id="account" class="tab-content active">
+        <div class="section">
+            <h2>Account Information</h2>
+            <div id="account-info">
+                <p>Loading account information...</p>
+            </div>
+            
+            <h2>Update Account</h2>
+            <form id="update-account-form">
+                <div>
+                    <label for="nickname">Nickname:</label>
+                    <input type="text" id="nickname" name="nickname"/>
+                </div>
+                <div>
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" name="name"/>
+                </div>
+                <div>
+                    <label for="mobile">Mobile:</label>
+                    <input type="text" id="mobile" name="mobile"/>
+                </div>
+                <div>
+                    <label for="address">Address:</label>
+                    <input type="text" id="address" name="address"/>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password"/>
+                </div>
+                <div>
+                    <label for="confirm-password">Confirm Password:</label>
+                    <input type="password" id="confirm-password" name="confirm-password"/>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <button type="submit">Update Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transactions Section -->
+    <div id="transactions" class="tab-content">
+        <div class="section">
+            <h2>Transaction History</h2>
+            <table id="transactions-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="6">Loading transactions...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Transfer Section -->
+    <div id="transfer" class="tab-content">
+        <div class="section">
+            <h2>Money Transfer</h2>
+            <form id="transfer-form">
+                <div>
+                    <label for="transfer-amount">Amount:</label>
+                    <input type="number" id="transfer-amount" name="amount" min="0" step="0.01" required/>
+                </div>
+                <div>
+                    <label for="target-card">Target Card Number:</label>
+                    <input type="text" id="target-card" name="targetCardNo" required/>
+                </div>
+                <div style="grid-column: span 2;">
+                    <button type="submit">Transfer Money</button>
+                </div>
+            </form>
+            
+            <h2>Deposit</h2>
+            <form id="deposit-form">
+                <div>
+                    <label for="deposit-amount">Amount:</label>
+                    <input type="number" id="deposit-amount" name="amount" min="0" step="0.01" required/>
+                </div>
+                <div>
+                    <button type="submit">Deposit Money</button>
+                </div>
+            </form>
+            
+            <h2>Withdraw</h2>
+            <form id="withdraw-form">
+                <div>
+                    <label for="withdraw-amount">Amount:</label>
+                    <input type="number" id="withdraw-amount" name="amount" min="0" step="0.01" required/>
+                </div>
+                <div>
+                    <button type="submit">Withdraw Money</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const baseUrl = "http://localhost:8080";
+    let token = localStorage.getItem("token");
+
+    // Check if user is logged in
+    if (!token) {
+        alert("You are not logged in. Redirecting to login page...");
+        window.location.href = "./login.html";
+    }
+
+    // Load account information when page loads
+    window.onload = function() {
+        loadAccountInfo();
+        loadTransactions();
+    };
+
+    // Tab switching functionality
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName).classList.add('active');
+        
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+    }
+
+    // Load account information
+    async function loadAccountInfo() {
+        try {
+            const response = await axios({
+                method: "get",
+                url: `${baseUrl}/account`,
+                headers: {
+                    "token": token
+                }
+            });
+
+            if (response.data.code === 200) {
+                const account = response.data.data;
+                document.getElementById('account-info').innerHTML = `
+                    <p><strong>Account ID:</strong> ${account.id}</p>
+                    <p><strong>Card Number:</strong> ${account.cardNo}</p>
+                    <p><strong>Card Type:</strong> ${getCardTypeName(account.cardType)}</p>
+                    <p><strong>Nickname:</strong> ${account.nickname}</p>
+                    <p><strong>Name:</strong> ${account.name}</p>
+                    <p><strong>Mobile:</strong> ${account.mobile}</p>
+                    <p><strong>ID Number:</strong> ${account.idNum}</p>
+                    <p><strong>Address:</strong> ${account.address}</p>
+                    <p><strong>Status:</strong> ${account.state === 1 ? 'Active' : 'Inactive'}</p>
+                `;
+                
+                // Populate form with current data
+                document.getElementById('nickname').value = account.nickname || '';
+                document.getElementById('name').value = account.name || '';
+                document.getElementById('mobile').value = account.mobile || '';
+                document.getElementById('address').value = account.address || '';
+            } else {
+                alert("Error loading account information: " + response.data.message);
+            }
+        } catch (error) {
+            console.error("Error loading account information:", error);
+            alert("Error loading account information.");
+        }
+    }
+
+    // Update account information
+    document.getElementById('update-account-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+        
+        const formData = {
+            nickname: document.getElementById('nickname').value,
+            name: document.getElementById('name').value,
+            mobile: document.getElementById('mobile').value,
+            address: document.getElementById('address').value,
+            password: password
+        };
+        
+        try {
+            const response = await axios({
+                method: "post",
+                url: `${baseUrl}/account`,
+                data: formData,
+                headers: {
+                    "token": token
+                }
+            });
+            
+            if (response.data.code === 200) {
+                alert("Account updated successfully!");
+                loadAccountInfo(); // Reload account info
+            } else {
+                alert("Error updating account: " + response.data.message);
+            }
+        } catch (error) {
+            console.error("Error updating account:", error);
+            alert("Error updating account.");
+        }
+    });
+
+    // Load transaction history
+    async function loadTransactions() {
+        try {
+            const response = await axios({
+                method: "get",
+                url: `${baseUrl}/transaction`,
+                headers: {
+                    "token": token
+                }
+            });
+
+            if (response.data.code === 200) {
+                const transactions = response.data.data.transactions;
+                const tbody = document.querySelector('#transactions-table tbody');
+                
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">No transactions found.</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = transactions.map(transaction => `
+                    <tr>
+                        <td>${transaction.id}</td>
+                        <td>${getTransactionTypeName(transaction.transactionType)}</td>
+                        <td>$${(transaction.amount / 100).toFixed(2)}</td>
+                        <td>$${(transaction.balanceAfter / 100).toFixed(2)}</td>
+                        <td>${transaction.description}</td>
+                        <td>${new Date(transaction.createTime).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                document.querySelector('#transactions-table tbody').innerHTML = 
+                    '<tr><td colspan="6">Error loading transactions.</td></tr>';
+            }
+        } catch (error) {
+            console.error("Error loading transactions:", error);
+            document.querySelector('#transactions-table tbody').innerHTML = 
+                '<tr><td colspan="6">Error loading transactions.</td></tr>';
+        }
+    }
+
+    // Transfer money
+    document.getElementById('transfer-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            action: "transfer",
+            amount: Math.round(document.getElementById('transfer-amount').value * 100),
+            targetCardNo: document.getElementById('target-card').value
+        };
+        
+        try {
+            const response = await axios({
+                method: "post",
+                url: `${baseUrl}/transaction`,
+                data: formData,
+                headers: {
+                    "token": token
+                }
+            });
+            
+            if (response.data.code === 200) {
+                alert("Transfer successful!");
+                document.getElementById('transfer-form').reset();
+                loadTransactions(); // Reload transactions
+            } else {
+                alert("Error transferring money: " + response.data.message);
+            }
+        } catch (error) {
+            console.error("Error transferring money:", error);
+            alert("Error transferring money.");
+        }
+    });
+
+    // Deposit money
+    document.getElementById('deposit-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            action: "deposit",
+            amount: Math.round(document.getElementById('deposit-amount').value * 100)
+        };
+        
+        try {
+            const response = await axios({
+                method: "post",
+                url: `${baseUrl}/transaction`,
+                data: formData,
+                headers: {
+                    "token": token
+                }
+            });
+            
+            if (response.data.code === 200) {
+                alert("Deposit successful!");
+                document.getElementById('deposit-form').reset();
+                loadTransactions(); // Reload transactions
+            } else {
+                alert("Error depositing money: " + response.data.message);
+            }
+        } catch (error) {
+            console.error("Error depositing money:", error);
+            alert("Error depositing money.");
+        }
+    });
+
+    // Withdraw money
+    document.getElementById('withdraw-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            action: "withdraw",
+            amount: Math.round(document.getElementById('withdraw-amount').value * 100)
+        };
+        
+        try {
+            const response = await axios({
+                method: "post",
+                url: `${baseUrl}/transaction`,
+                data: formData,
+                headers: {
+                    "token": token
+                }
+            });
+            
+            if (response.data.code === 200) {
+                alert("Withdrawal successful!");
+                document.getElementById('withdraw-form').reset();
+                loadTransactions(); // Reload transactions
+            } else {
+                alert("Error withdrawing money: " + response.data.message);
+            }
+        } catch (error) {
+            console.error("Error withdrawing money:", error);
+            alert("Error withdrawing money.");
+        }
+    });
+
+    // Helper functions
+    function getCardTypeName(cardType) {
+        switch(cardType) {
+            case "1": return "Savings Card";
+            case "2": return "Credit Card";
+            case "3": return "Social Security Card";
+            default: return "Unknown";
+        }
+    }
+
+    function getTransactionTypeName(type) {
+        switch(type) {
+            case "deposit": return "Deposit";
+            case "withdrawal": return "Withdrawal";
+            case "transfer_out": return "Transfer Out";
+            case "transfer_in": return "Transfer In";
+            default: return type;
+        }
+    }
+</script>
+</body>
+</html>

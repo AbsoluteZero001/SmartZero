@@ -3,43 +3,97 @@
   <head>
     <meta charset="UTF-8" /> <!-- 设置文档字符编码为UTF-8 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- 设置视口，使页面在移动设备上正确显示 -->
-    <title>Document</title> <!-- 设置页面标题 -->
+    <title>Bank System Login</title> <!-- 设置页面标题 -->
     <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> --> <!-- 注释掉的axios CDN链接 -->
     <script src="../assets/js/axios.js"></script> <!-- 引入本地axios库 -->
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .login-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        width: 350px;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
   </head>
   <body>
-    <!-- 表单部分，包含手机号、密码和登录类型输入 -->
-    <form>
-      <!-- 手机号输入框 -->
-      <label for="mobile">
-        手机号：
-        <input type="text" name="mobile" id="mobile" />
-      </label>
-      <br />
-      <!-- 密码输入框 -->
-      <label for="pwd">
-        密码：
-        <input type="text" name="pwd" id="pwd" />
-      </label>
-      <!-- 登录类型选择框 -->
-      <label for="loginType">
-        登录状态：
-        <!-- <input type="text" name="pwd" id="pwd" /> --> <!-- 注释掉的密码输入框 -->
-        <select name="loginType" id="loginType">
-          <option value="admin">admin</option> <!-- 管理员选项 -->
-          <option value="user">user</option> <!-- 普通用户选项 -->
-        </select>
-      </label>
-      <br />
-      <!-- 提交按钮 -->
-      <input type="submit" value="提交" />
-    </form>
+    <div class="login-container">
+      <h2>Bank System Login</h2>
+      <!-- 表单部分，包含手机号、密码和登录类型输入 -->
+      <form>
+        <div class="form-group">
+          <label for="mobile">
+            手机号：
+          </label>
+          <input type="text" name="mobile" id="mobile" />
+        </div>
+        <div class="form-group">
+          <label for="pwd">
+            密码：
+          </label>
+          <input type="password" name="pwd" id="pwd" />
+        </div>
+        <div class="form-group">
+          <label for="loginType">
+            登录状态：
+            <select name="loginType" id="loginType">
+              <option value="admin">管理员</option> <!-- 管理员选项 -->
+              <option value="user">用户</option> <!-- 普通用户选项 -->
+            </select>
+          </label>
+        </div>
+        <button type="submit">登录</button>
+      </form>
+    </div>
     <script>
       // 获取提交按钮元素
-      const btn = document.querySelector("input[type=submit]");
-      console.log(btn); // 在控制台输出按钮元素
+      const form = document.querySelector("form");
+      console.log(form); // 在控制台输出按钮元素
       // 为提交按钮添加点击事件处理函数
-      btn.onclick = async (e) => {
+      form.onsubmit = async (e) => {
         // 获取表单输入值
         const mobile = document.querySelector("#mobile").value;
         const pwd = document.querySelector("#pwd").value;
@@ -48,7 +102,7 @@
         // 输入验证
         if (!mobile || !pwd) {
           alert("手机号和密码不能为空！");
-          return;
+          return false;
         }
 
         // 构建请求数据对象
@@ -81,15 +135,16 @@
           localStorage.setItem("token", res.data.data.token);
           if (loginType === "admin") {
             alert("管理员登录成功，正在跳转...");
-            window.location = "./index.html";
+            window.location = "./admin_dashboard.html";
           } else if (loginType === "user") {
             alert("用户登录成功，正在跳转...");
-            window.location = "./user.html";
+            window.location = "./user_dashboard.html";
           }
         } else {
           alert(res.data.message || "登录失败，请检查账号或密码！");
         }
 
+        return false;
       };
     </script>
   </body>
